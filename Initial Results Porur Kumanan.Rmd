@@ -1,0 +1,77 @@
+---
+title: 'Capstone Project - Initial Results and Code'
+author: "Porur E. Kumanan"
+output:
+  word_document: default
+  pdf_document: default
+  #html_document: default
+---
+
+
+
+```{r}
+setwd("C:/Users/Arasan/Documents/Arasan/School/Ryerson/CKME 136- Capstone")
+getwd()
+
+GDPdata <- read.csv(file="GDPDataProcessed.csv", header=TRUE, sep=",")
+
+
+#-------
+
+# Apply PCA on the variables of GDPdata
+data(GDPdata)
+#is.na(GDPdata)
+#check=sum(is.na(GDPdata))
+#class(GDPdata_x$GDPinUSDInMillions)
+GDPdata_x <-GDPdata[,3:57]
+GDPdata_x <- na.omit(GDPdata_x)
+# Splitting the GDPdata dataset into training and test set.
+train_index <- sample(1:nrow(GDPdata_x), 0.7 * nrow(GDPdata_x))
+GDPdata.train.set <-GDPdata_x[train_index,]
+GDPdata.test.set  <- GDPdata_x[-train_index,]
+
+
+#Calculating PCAs from raw data
+
+GDPdataTrainSet.pca.rawdata <- prcomp(GDPdata.train.set, scale = FALSE, center= FALSE)
+GDPdataTrainSet.pca.rawdata
+
+#Transform the dataset using calculated PCAs.
+
+head(as.matrix(GDPdata.train.set)%*%GDPdataTrainSet.pca.rawdata$rotation)
+
+#Apply normalization (scaling and centering) to the data.
+#Recalculate PCA with normalized data. 
+GDPdataTrainSet.pca.normdata <- prcomp(GDPdata.train.set, scale = TRUE, center= TRUE)
+GDPdataTrainSet.pca.normdata$rotation      # eigen vector / rotation matrix / tranformation matrix
+head(GDPdataTrainSet.pca.normdata$x)       # Transformed data
+summary(GDPdataTrainSet.pca.normdata)
+
+# We obtained 55 principle component 
+#The first 19 components account for >95% of total variance in the data
+
+# Biplot the first two PCs. 
+
+boxplot(GDPdataTrainSet.pca.normdata$x, main='Norm Data Transformation')
+
+#Visualize first two components of your PCA. 
+
+biplot(GDPdataTrainSet.pca.normdata, choices = 1:2, main='Norm Data')
+
+#correlations of the PCs
+
+cor(GDPdataTrainSet.pca.normdata$x)
+
+
+#-----------------
+#Predict using PCA
+
+PredictingData<- predict(GDPdataTrainSet.pca.normdata, newdata = GDPdata.test.set )
+PredictingData[,1:5]
+#-----------------
+```
+
+
+
+
+END.
